@@ -2,20 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/superbase";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// Dynamically import Leaflet and Map components with SSR disabled to prevent "window is not defined" error
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
+
+const MapController = dynamic(
+  () => import("react-leaflet").then((mod) => {
+    const { useMap } = mod;
+    return function MapControllerComp({ center }: { center: [number, number] }) {
+      const map = useMap();
+      useEffect(() => {
+        map.flyTo(center, 16, { duration: 1.5 });
+      }, [center, map]);
+      return null;
+    };
+  }),
+  { ssr: false }
+);
 
 const CHENNAI_CENTER: [number, number] = [13.0827, 80.2707];
-
-function MapController({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.flyTo(center, 16, { duration: 1.5 });
-  }, [center, map]);
-  return null;
-}
 
 export default function AdminPage() {
   const [reports, setReports] = useState<any[]>([]);
@@ -28,7 +39,6 @@ export default function AdminPage() {
       .order("id", { ascending: false });
       
     if (!error && data) {
-      // Filter out items that are already Verified or Rejected on the client side perfectly
       const pendingOnly = data.filter((item: any) => {
         const status = (item.status || "").toLowerCase();
         return status !== "verified" && status !== "rejected";
@@ -53,7 +63,6 @@ export default function AdminPage() {
   }, []);
 
   const handleUpdateStatus = async (id: number, newStatus: "Verified" | "Rejected") => {
-    // Optimistically update UI instantly
     setReports((prev) => prev.filter((r) => r.id !== id));
 
     const { error } = await supabase
@@ -64,7 +73,7 @@ export default function AdminPage() {
     if (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status.");
-      fetchAdminReports(); // Revert on error
+      fetchAdminReports();
     }
   };
 
