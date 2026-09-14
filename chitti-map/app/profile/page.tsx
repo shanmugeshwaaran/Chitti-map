@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/superbase";
+import { useRouter } from "next/navigation"; // 1. Added import here
 import Link from "next/link";
 import { ArrowLeft, History, Mail, Phone, ShieldCheck, LogOut, Camera } from "lucide-react";
 
@@ -9,8 +10,15 @@ export default function UserProfilePage() {
   const [totalPoints, setTotalPoints] = useState(450);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter(); // 2. Added router hook here
 
   const userId = "STU-101";
+
+  // 2. Added handleLogout function here
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   useEffect(() => {
     async function fetchPoints() {
@@ -138,7 +146,11 @@ export default function UserProfilePage() {
         {/* Footer Actions */}
         <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-500">
           <span>Secured via Supabase & Chitti Network</span>
-          <button className="text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
+          {/* 3. Added onClick={handleLogout} to the button below */}
+          <button 
+            onClick={handleLogout}
+            className="text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
             <LogOut className="h-3.5 w-3.5" /> Logout Account
           </button>
         </div>
