@@ -35,7 +35,7 @@ export default function RegisterPage() {
         <div className="text-center mt-4 mb-6">
           <Image src="/chitti_mother_square-min.png" alt="Chitti Logo" width={48} height={48} className="mx-auto mb-3 rounded-xl" />
           <h1 className="text-2xl font-bold">Create Student Account</h1>
-          <p className="text-xs text-chitti-mist mt-1">Join CEYAL STEM community for safe routing.</p>
+          <p className="text-xs text-chitti-mist mt-1">Join Chitti STEM community for safe routing.</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-3.5">
